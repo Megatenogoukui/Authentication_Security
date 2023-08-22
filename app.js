@@ -3,6 +3,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import ejs from 'ejs'
 import mongoose from 'mongoose';
+import encrypt from 'mongoose-encryption'
 
 const app = express();
 const port = 3000;
@@ -20,7 +21,10 @@ const userDBSchema = new mongoose.Schema({
     password: String
 });
 
+//Encrypting the pasword which will be stored in the data base
+const secret = "LavdduBataMatKisiko";
 
+userDBSchema.plugin(encrypt , {secret:secret , encryptedFields: ['password']} );
 
 //Creating a model of that schema
 const UserDB = mongoose.model("userDB" , userDBSchema);
