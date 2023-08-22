@@ -3,7 +3,8 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import ejs from 'ejs'
 import mongoose from 'mongoose';
-import encrypt from 'mongoose-encryption'
+import md5 from 'md5';
+import 'dotenv/config'
 
 const app = express();
 const port = 3000;
@@ -18,13 +19,10 @@ mongoose.connect("mongodb://localhost:27017/SecretUserDB" ,{family : 4});
 //Creating the collection schema
 const userDBSchema = new mongoose.Schema({
     username : String,
-    password: String
+    password:String
 });
 
-//Encrypting the pasword which will be stored in the data base
-const secret = "LavdduBataMatKisiko";
 
-userDBSchema.plugin(encrypt , {secret:secret , encryptedFields: ['password']} );
 
 //Creating a model of that schema
 const UserDB = mongoose.model("userDB" , userDBSchema);
@@ -35,7 +33,7 @@ app.post("/register" , async (req,res) => {
         //Creatwed a new user according to the schema
         const user = new UserDB({
             username : req.body.username,
-            password : req.body.password
+            password :  md5(req.body.password) //Encrpyted our password using hashing(md5)
         })
         //Inserted the user inside the database 
         user.save();
@@ -56,7 +54,7 @@ app.post("/login" , async (req,res) => {
         //If the username is present in th database render secrets page
         if (found){
             //Checking if the password matches
-            if (found.password === req.body.password){
+            if (found.password === md5(req.body.password)){ //Checking both the encrypted passwords are correct or not
                 res.render("secrets");
             }
             else{
